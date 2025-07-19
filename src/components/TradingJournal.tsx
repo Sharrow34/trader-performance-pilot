@@ -91,29 +91,29 @@ export const TradingJournal: React.FC = () => {
   const avgLoss = losingTrades.length > 0 ? losingTrades.reduce((sum, trade) => sum + (trade.pnl || 0), 0) / losingTrades.length : 0;
 
   return (
-    <div className="min-h-screen bg-background p-6">
+    <div className="min-h-screen bg-background p-6 animate-fade-in">
       <div className="max-w-7xl mx-auto space-y-6">
         {/* Header */}
-        <div className="flex justify-between items-center">
+        <div className="flex justify-between items-center animate-slide-up">
           <div>
             <h1 className="text-3xl font-bold text-foreground">Trading Journal</h1>
             <p className="text-muted-foreground">Track and analyze your trading performance</p>
           </div>
-          <Button onClick={() => setShowAddForm(true)} className="flex items-center gap-2">
+          <Button onClick={() => setShowAddForm(true)} className="flex items-center gap-2 hover-lift transition-normal">
             <Plus className="h-4 w-4" />
             Add Trade
           </Button>
         </div>
 
         {/* Performance Overview */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-          <Card>
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 stagger-animation">
+          <Card className="hover-lift animate-scale-in transition-normal" style={{"--i": 0} as React.CSSProperties}>
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
               <CardTitle className="text-sm font-medium">Total P&L</CardTitle>
               <DollarSign className="h-4 w-4 text-muted-foreground" />
             </CardHeader>
             <CardContent>
-              <div className={`text-2xl font-bold ${totalPnL >= 0 ? 'text-profit' : 'text-loss'}`}>
+              <div className={`text-2xl font-bold transition-normal ${totalPnL >= 0 ? 'text-profit' : 'text-loss'}`}>
                 ${totalPnL.toFixed(2)}
               </div>
               <p className="text-xs text-muted-foreground">
@@ -122,13 +122,13 @@ export const TradingJournal: React.FC = () => {
             </CardContent>
           </Card>
 
-          <Card>
+          <Card className="hover-lift animate-scale-in transition-normal" style={{"--i": 1} as React.CSSProperties}>
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
               <CardTitle className="text-sm font-medium">Win Rate</CardTitle>
               <Target className="h-4 w-4 text-muted-foreground" />
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold text-foreground">
+              <div className="text-2xl font-bold text-foreground transition-normal">
                 {winRate.toFixed(1)}%
               </div>
               <p className="text-xs text-muted-foreground">
@@ -137,13 +137,13 @@ export const TradingJournal: React.FC = () => {
             </CardContent>
           </Card>
 
-          <Card>
+          <Card className="hover-lift animate-scale-in transition-normal" style={{"--i": 2} as React.CSSProperties}>
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
               <CardTitle className="text-sm font-medium">Avg Win</CardTitle>
               <TrendingUp className="h-4 w-4 text-profit" />
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold text-profit">
+              <div className="text-2xl font-bold text-profit transition-normal">
                 ${avgWin.toFixed(2)}
               </div>
               <p className="text-xs text-muted-foreground">
@@ -152,13 +152,13 @@ export const TradingJournal: React.FC = () => {
             </CardContent>
           </Card>
 
-          <Card>
+          <Card className="hover-lift animate-scale-in transition-normal" style={{"--i": 3} as React.CSSProperties}>
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
               <CardTitle className="text-sm font-medium">Avg Loss</CardTitle>
               <TrendingDown className="h-4 w-4 text-loss" />
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold text-loss">
+              <div className="text-2xl font-bold text-loss transition-normal">
                 ${avgLoss.toFixed(2)}
               </div>
               <p className="text-xs text-muted-foreground">
@@ -169,20 +169,20 @@ export const TradingJournal: React.FC = () => {
         </div>
 
         {/* Main Content */}
-        <Tabs defaultValue="trades" className="space-y-4">
-          <TabsList>
-            <TabsTrigger value="trades">Trades</TabsTrigger>
-            <TabsTrigger value="analytics">Analytics</TabsTrigger>
+        <Tabs defaultValue="trades" className="space-y-4 animate-slide-up">
+          <TabsList className="transition-normal">
+            <TabsTrigger value="trades" className="transition-fast">Trades</TabsTrigger>
+            <TabsTrigger value="analytics" className="transition-fast">Analytics</TabsTrigger>
           </TabsList>
 
-          <TabsContent value="trades" className="space-y-4">
+          <TabsContent value="trades" className="space-y-4 animate-fade-in">
             <TradesList trades={trades} />
           </TabsContent>
 
-          <TabsContent value="analytics" className="space-y-4">
+          <TabsContent value="analytics" className="space-y-4 animate-fade-in">
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
               <PerformanceChart trades={closedTrades} />
-              <Card>
+              <Card className="hover-lift transition-normal">
                 <CardHeader>
                   <CardTitle>Strategy Performance</CardTitle>
                 </CardHeader>
@@ -195,14 +195,14 @@ export const TradingJournal: React.FC = () => {
                         (strategyTrades.filter(t => (t.pnl || 0) > 0).length / strategyTrades.length) * 100 : 0;
                       
                       return (
-                        <div key={strategy} className="flex items-center justify-between p-3 border rounded-lg">
+                        <div key={strategy} className="flex items-center justify-between p-3 border rounded-lg hover-scale transition-normal">
                           <div>
                             <Badge variant="outline">{strategy}</Badge>
                             <p className="text-sm text-muted-foreground mt-1">
                               {strategyTrades.length} trades • {strategyWinRate.toFixed(1)}% win rate
                             </p>
                           </div>
-                          <div className={`text-lg font-semibold ${strategyPnL >= 0 ? 'text-profit' : 'text-loss'}`}>
+                          <div className={`text-lg font-semibold transition-normal ${strategyPnL >= 0 ? 'text-profit' : 'text-loss'}`}>
                             ${strategyPnL.toFixed(2)}
                           </div>
                         </div>

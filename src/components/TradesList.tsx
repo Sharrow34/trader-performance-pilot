@@ -51,7 +51,7 @@ export const TradesList: React.FC<TradesListProps> = ({ trades }) => {
   };
 
   return (
-    <Card>
+    <Card className="animate-fade-in hover-lift transition-normal">
       <CardHeader>
         <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
           <CardTitle className="flex items-center gap-2">
@@ -65,7 +65,7 @@ export const TradesList: React.FC<TradesListProps> = ({ trades }) => {
                 placeholder="Search trades..."
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
-                className="pl-9 w-full sm:w-64"
+                className="pl-9 w-full sm:w-64 transition-normal"
               />
             </div>
             <Select value={statusFilter} onValueChange={setStatusFilter}>
@@ -120,7 +120,7 @@ export const TradesList: React.FC<TradesListProps> = ({ trades }) => {
                 </TableRow>
               ) : (
                 filteredTrades.map((trade) => (
-                  <TableRow key={trade.id} className="hover:bg-muted/50">
+                  <TableRow key={trade.id} className="hover:bg-muted/50 transition-fast cursor-pointer">
                     <TableCell className="font-medium">{trade.symbol}</TableCell>
                     <TableCell>
                       <Badge variant={trade.action === 'buy' ? 'default' : 'secondary'}>

@@ -75,8 +75,8 @@ export const AddTradeForm: React.FC<AddTradeFormProps> = ({ onSubmit, onCancel }
   };
 
   return (
-    <div className="fixed inset-0 bg-background/80 backdrop-blur-sm z-50 flex items-center justify-center p-4">
-      <Card className="w-full max-w-2xl max-h-[90vh] overflow-y-auto">
+    <div className="fixed inset-0 bg-background/80 backdrop-blur-sm z-50 flex items-center justify-center p-4 animate-fade-in">
+      <Card className="w-full max-w-2xl max-h-[90vh] overflow-y-auto animate-scale-in transition-normal hover-lift">
         <CardHeader>
           <div className="flex items-center justify-between">
             <CardTitle>Add New Trade</CardTitle>
