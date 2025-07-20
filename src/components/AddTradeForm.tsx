@@ -25,26 +25,12 @@ export const AddTradeForm: React.FC<AddTradeFormProps> = ({ onSubmit, onCancel, 
     exitPrice: trade?.exitPrice?.toString() || '',
     entryDate: trade?.entryDate || '',
     exitDate: trade?.exitDate || '',
-    status: trade?.status || 'open' as 'open' | 'closed',
     strategy: trade?.strategy || '',
     notes: trade?.notes || '',
   });
-  const [tags, setTags] = useState<string[]>(trade?.tags || []);
-  const [newTag, setNewTag] = useState('');
 
   const handleInputChange = (field: string, value: string) => {
     setFormData(prev => ({ ...prev, [field]: value }));
-  };
-
-  const addTag = () => {
-    if (newTag.trim() && !tags.includes(newTag.trim())) {
-      setTags([...tags, newTag.trim()]);
-      setNewTag('');
-    }
-  };
-
-  const removeTag = (tagToRemove: string) => {
-    setTags(tags.filter(tag => tag !== tagToRemove));
   };
 
   const handleSubmit = (e: React.FormEvent) => {
@@ -55,22 +41,19 @@ export const AddTradeForm: React.FC<AddTradeFormProps> = ({ onSubmit, onCancel, 
       action: formData.action,
       quantity: parseInt(formData.quantity),
       entryPrice: parseFloat(formData.entryPrice),
-      exitPrice: formData.exitPrice ? parseFloat(formData.exitPrice) : undefined,
+      exitPrice: parseFloat(formData.exitPrice),
       entryDate: formData.entryDate,
-      exitDate: formData.exitDate || undefined,
-      status: formData.status,
+      exitDate: formData.exitDate,
       strategy: formData.strategy || undefined,
       notes: formData.notes || undefined,
-      tags: tags.length > 0 ? tags : undefined,
+      pnl: 0
     };
 
-    // Calculate P&L if trade is closed
-    if (trade.status === 'closed' && trade.exitPrice) {
-      if (trade.action === 'buy') {
-        trade.pnl = (trade.exitPrice - trade.entryPrice) * trade.quantity;
-      } else {
-        trade.pnl = (trade.entryPrice - trade.exitPrice) * trade.quantity;
-      }
+    // Calculate P&L
+    if (trade.action === 'buy') {
+      trade.pnl = (trade.exitPrice - trade.entryPrice) * trade.quantity;
+    } else {
+      trade.pnl = (trade.entryPrice - trade.exitPrice) * trade.quantity;
     }
 
     onSubmit(trade);
@@ -152,45 +135,29 @@ export const AddTradeForm: React.FC<AddTradeFormProps> = ({ onSubmit, onCancel, 
                 />
               </div>
               <div className="space-y-2">
-                <Label htmlFor="status">Status</Label>
-                <Select value={formData.status} onValueChange={(value) => handleInputChange('status', value)}>
-                  <SelectTrigger>
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="open">Open</SelectItem>
-                    <SelectItem value="closed">Closed</SelectItem>
-                  </SelectContent>
-                </Select>
+                <Label htmlFor="exitPrice">Exit Price</Label>
+                <Input
+                  id="exitPrice"
+                  type="number"
+                  step="0.01"
+                  value={formData.exitPrice}
+                  onChange={(e) => handleInputChange('exitPrice', e.target.value)}
+                  placeholder="155.50"
+                  required
+                />
               </div>
             </div>
 
-            {formData.status === 'closed' && (
-              <div className="grid grid-cols-2 gap-4">
-                <div className="space-y-2">
-                  <Label htmlFor="exitPrice">Exit Price</Label>
-                  <Input
-                    id="exitPrice"
-                    type="number"
-                    step="0.01"
-                    value={formData.exitPrice}
-                    onChange={(e) => handleInputChange('exitPrice', e.target.value)}
-                    placeholder="155.50"
-                    required={formData.status === 'closed'}
-                  />
-                </div>
-                <div className="space-y-2">
-                  <Label htmlFor="exitDate">Exit Date</Label>
-                  <Input
-                    id="exitDate"
-                    type="date"
-                    value={formData.exitDate}
-                    onChange={(e) => handleInputChange('exitDate', e.target.value)}
-                    required={formData.status === 'closed'}
-                  />
-                </div>
-              </div>
-            )}
+            <div className="space-y-2">
+              <Label htmlFor="exitDate">Exit Date</Label>
+              <Input
+                id="exitDate"
+                type="date"
+                value={formData.exitDate}
+                onChange={(e) => handleInputChange('exitDate', e.target.value)}
+                required
+              />
+            </div>
 
             <div className="space-y-2">
               <Label htmlFor="strategy">Strategy</Label>
@@ -200,35 +167,6 @@ export const AddTradeForm: React.FC<AddTradeFormProps> = ({ onSubmit, onCancel, 
                 onChange={(e) => handleInputChange('strategy', e.target.value)}
                 placeholder="Swing Trading, Day Trade, etc."
               />
-            </div>
-
-            <div className="space-y-2">
-              <Label>Tags</Label>
-              <div className="flex gap-2 mb-2">
-                <Input
-                  value={newTag}
-                  onChange={(e) => setNewTag(e.target.value)}
-                  placeholder="Add tag"
-                  onKeyPress={(e) => e.key === 'Enter' && (e.preventDefault(), addTag())}
-                />
-                <Button type="button" onClick={addTag} size="sm">
-                  <Plus className="h-4 w-4" />
-                </Button>
-              </div>
-              <div className="flex flex-wrap gap-2">
-                {tags.map(tag => (
-                  <Badge key={tag} variant="secondary" className="flex items-center gap-1">
-                    {tag}
-                    <button
-                      type="button"
-                      onClick={() => removeTag(tag)}
-                      className="ml-1 text-xs hover:text-destructive"
-                    >
-                      <X className="h-3 w-3" />
-                    </button>
-                  </Badge>
-                ))}
-              </div>
             </div>
 
             <div className="space-y-2">

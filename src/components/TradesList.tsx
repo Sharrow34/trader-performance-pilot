@@ -16,17 +16,15 @@ interface TradesListProps {
 
 export const TradesList: React.FC<TradesListProps> = ({ trades, onEditTrade, onDeleteTrade }) => {
   const [searchTerm, setSearchTerm] = useState('');
-  const [statusFilter, setStatusFilter] = useState<string>('all');
   const [strategyFilter, setStrategyFilter] = useState<string>('all');
 
   const filteredTrades = trades.filter(trade => {
     const matchesSearch = trade.symbol.toLowerCase().includes(searchTerm.toLowerCase()) ||
                          (trade.notes?.toLowerCase().includes(searchTerm.toLowerCase())) ||
                          (trade.strategy?.toLowerCase().includes(searchTerm.toLowerCase()));
-    const matchesStatus = statusFilter === 'all' || trade.status === statusFilter;
     const matchesStrategy = strategyFilter === 'all' || trade.strategy === strategyFilter;
     
-    return matchesSearch && matchesStatus && matchesStrategy;
+    return matchesSearch && matchesStrategy;
   });
 
   const uniqueStrategies = Array.from(new Set(trades.map(t => t.strategy).filter(Boolean)));
@@ -43,12 +41,11 @@ export const TradesList: React.FC<TradesListProps> = ({ trades, onEditTrade, onD
     }).format(amount);
   };
 
-  const getStatusBadgeVariant = (status: string) => {
-    return status === 'open' ? 'default' : 'secondary';
+  const getActionBadgeVariant = (action: string) => {
+    return action === 'buy' ? 'default' : 'secondary';
   };
 
-  const getPnLColor = (pnl: number | undefined) => {
-    if (!pnl) return 'text-muted-foreground';
+  const getPnLColor = (pnl: number) => {
     return pnl >= 0 ? 'text-profit' : 'text-loss';
   };
 
@@ -70,16 +67,6 @@ export const TradesList: React.FC<TradesListProps> = ({ trades, onEditTrade, onD
                 className="pl-9 w-full sm:w-64 transition-normal"
               />
             </div>
-            <Select value={statusFilter} onValueChange={setStatusFilter}>
-              <SelectTrigger className="w-full sm:w-32">
-                <SelectValue placeholder="Status" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="all">All Status</SelectItem>
-                <SelectItem value="open">Open</SelectItem>
-                <SelectItem value="closed">Closed</SelectItem>
-              </SelectContent>
-            </Select>
             <Select value={strategyFilter} onValueChange={setStrategyFilter}>
               <SelectTrigger className="w-full sm:w-40">
                 <SelectValue placeholder="Strategy" />
@@ -107,17 +94,16 @@ export const TradesList: React.FC<TradesListProps> = ({ trades, onEditTrade, onD
                 <TableHead>Entry Price</TableHead>
                 <TableHead>Exit Price</TableHead>
                 <TableHead>Entry Date</TableHead>
+                <TableHead>Exit Date</TableHead>
                 <TableHead>P&L</TableHead>
-                <TableHead>Status</TableHead>
                 <TableHead>Strategy</TableHead>
-                <TableHead>Tags</TableHead>
                 <TableHead>Actions</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
               {filteredTrades.length === 0 ? (
                 <TableRow>
-                  <TableCell colSpan={11} className="text-center py-8 text-muted-foreground">
+                  <TableCell colSpan={10} className="text-center py-8 text-muted-foreground">
                     No trades found matching your criteria
                   </TableCell>
                 </TableRow>
@@ -126,49 +112,29 @@ export const TradesList: React.FC<TradesListProps> = ({ trades, onEditTrade, onD
                   <TableRow key={trade.id} className="hover:bg-muted/50 transition-fast">
                     <TableCell className="font-medium">{trade.symbol}</TableCell>
                     <TableCell>
-                      <Badge variant={trade.action === 'buy' ? 'default' : 'secondary'}>
+                      <Badge variant={getActionBadgeVariant(trade.action)}>
                         {trade.action.toUpperCase()}
                       </Badge>
                     </TableCell>
                     <TableCell>{trade.quantity.toLocaleString()}</TableCell>
                     <TableCell>{formatCurrency(trade.entryPrice)}</TableCell>
-                    <TableCell>
-                      {trade.exitPrice ? formatCurrency(trade.exitPrice) : '-'}
-                    </TableCell>
+                    <TableCell>{formatCurrency(trade.exitPrice)}</TableCell>
                     <TableCell>{formatDate(trade.entryDate)}</TableCell>
+                    <TableCell>{formatDate(trade.exitDate)}</TableCell>
                     <TableCell className={getPnLColor(trade.pnl)}>
                       <div className="flex items-center gap-1">
-                        {trade.pnl !== undefined && (
-                          <>
-                            {trade.pnl >= 0 ? (
-                              <TrendingUp className="h-4 w-4" />
-                            ) : (
-                              <TrendingDown className="h-4 w-4" />
-                            )}
-                            {formatCurrency(trade.pnl)}
-                          </>
+                        {trade.pnl >= 0 ? (
+                          <TrendingUp className="h-4 w-4" />
+                        ) : (
+                          <TrendingDown className="h-4 w-4" />
                         )}
-                        {trade.pnl === undefined && '-'}
+                        {formatCurrency(trade.pnl)}
                       </div>
-                    </TableCell>
-                    <TableCell>
-                      <Badge variant={getStatusBadgeVariant(trade.status)}>
-                        {trade.status}
-                      </Badge>
                     </TableCell>
                     <TableCell>
                       {trade.strategy && (
                         <Badge variant="outline">{trade.strategy}</Badge>
                       )}
-                    </TableCell>
-                    <TableCell>
-                      <div className="flex flex-wrap gap-1">
-                        {trade.tags?.map(tag => (
-                          <Badge key={tag} variant="secondary" className="text-xs">
-                            {tag}
-                          </Badge>
-                        ))}
-                      </div>
                     </TableCell>
                     <TableCell>
                       <div className="flex items-center gap-2">

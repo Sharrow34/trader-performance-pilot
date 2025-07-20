@@ -14,14 +14,12 @@ export interface Trade {
   action: 'buy' | 'sell';
   quantity: number;
   entryPrice: number;
-  exitPrice?: number;
+  exitPrice: number;
   entryDate: string;
-  exitDate?: string;
-  pnl?: number;
-  status: 'open' | 'closed';
+  exitDate: string;
+  pnl: number;
   strategy?: string;
   notes?: string;
-  tags?: string[];
 }
 
 const sampleTrades: Trade[] = [
@@ -35,10 +33,8 @@ const sampleTrades: Trade[] = [
     entryDate: '2024-01-15',
     exitDate: '2024-01-18',
     pnl: 525,
-    status: 'closed',
     strategy: 'Swing Trading',
-    notes: 'Strong earnings expected, bought on pullback',
-    tags: ['tech', 'earnings']
+    notes: 'Strong earnings expected, bought on pullback'
   },
   {
     id: '2',
@@ -50,10 +46,8 @@ const sampleTrades: Trade[] = [
     entryDate: '2024-01-20',
     exitDate: '2024-01-22',
     pnl: -212.50,
-    status: 'closed',
     strategy: 'Momentum',
-    notes: 'Stopped out on market weakness',
-    tags: ['ev', 'momentum']
+    notes: 'Stopped out on market weakness'
   },
   {
     id: '3',
@@ -61,11 +55,25 @@ const sampleTrades: Trade[] = [
     action: 'buy',
     quantity: 75,
     entryPrice: 380.50,
+    exitPrice: 385.75,
     entryDate: '2024-01-25',
-    status: 'open',
+    exitDate: '2024-01-28',
+    pnl: 393.75,
     strategy: 'Long Term',
-    notes: 'Strong cloud growth prospects',
-    tags: ['tech', 'cloud']
+    notes: 'Strong cloud growth prospects'
+  },
+  {
+    id: '4',
+    symbol: 'NVDA',
+    action: 'buy',
+    quantity: 25,
+    entryPrice: 720.00,
+    exitPrice: 745.50,
+    entryDate: '2024-02-01',
+    exitDate: '2024-02-05',
+    pnl: 637.50,
+    strategy: 'AI Play',
+    notes: 'AI momentum trade'
   }
 ];
 
@@ -133,13 +141,12 @@ export const TradingJournal: React.FC = () => {
     event.target.value = '';
   };
 
-  const closedTrades = trades.filter(trade => trade.status === 'closed');
-  const totalPnL = closedTrades.reduce((sum, trade) => sum + (trade.pnl || 0), 0);
-  const winningTrades = closedTrades.filter(trade => (trade.pnl || 0) > 0);
-  const losingTrades = closedTrades.filter(trade => (trade.pnl || 0) < 0);
-  const winRate = closedTrades.length > 0 ? (winningTrades.length / closedTrades.length) * 100 : 0;
-  const avgWin = winningTrades.length > 0 ? winningTrades.reduce((sum, trade) => sum + (trade.pnl || 0), 0) / winningTrades.length : 0;
-  const avgLoss = losingTrades.length > 0 ? losingTrades.reduce((sum, trade) => sum + (trade.pnl || 0), 0) / losingTrades.length : 0;
+  const totalPnL = trades.reduce((sum, trade) => sum + trade.pnl, 0);
+  const winningTrades = trades.filter(trade => trade.pnl > 0);
+  const losingTrades = trades.filter(trade => trade.pnl < 0);
+  const winRate = trades.length > 0 ? (winningTrades.length / trades.length) * 100 : 0;
+  const avgWin = winningTrades.length > 0 ? winningTrades.reduce((sum, trade) => sum + trade.pnl, 0) / winningTrades.length : 0;
+  const avgLoss = losingTrades.length > 0 ? losingTrades.reduce((sum, trade) => sum + trade.pnl, 0) / losingTrades.length : 0;
 
   return (
     <div className="min-h-screen bg-background p-6 animate-fade-in">
@@ -193,7 +200,7 @@ export const TradingJournal: React.FC = () => {
                 ${totalPnL.toFixed(2)}
               </div>
               <p className="text-xs text-muted-foreground">
-                {closedTrades.length} trades closed
+                {trades.length} trades completed
               </p>
             </CardContent>
           </Card>
@@ -261,7 +268,7 @@ export const TradingJournal: React.FC = () => {
 
           <TabsContent value="analytics" className="space-y-4 animate-fade-in">
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-              <PerformanceChart trades={closedTrades} />
+              <PerformanceChart trades={trades} />
               <Card className="hover-lift transition-normal">
                 <CardHeader>
                   <CardTitle>Strategy Performance</CardTitle>
@@ -269,10 +276,10 @@ export const TradingJournal: React.FC = () => {
                 <CardContent>
                   <div className="space-y-4">
                     {Array.from(new Set(trades.map(t => t.strategy).filter(Boolean))).map(strategy => {
-                      const strategyTrades = trades.filter(t => t.strategy === strategy && t.status === 'closed');
-                      const strategyPnL = strategyTrades.reduce((sum, trade) => sum + (trade.pnl || 0), 0);
+                      const strategyTrades = trades.filter(t => t.strategy === strategy);
+                      const strategyPnL = strategyTrades.reduce((sum, trade) => sum + trade.pnl, 0);
                       const strategyWinRate = strategyTrades.length > 0 ? 
-                        (strategyTrades.filter(t => (t.pnl || 0) > 0).length / strategyTrades.length) * 100 : 0;
+                        (strategyTrades.filter(t => t.pnl > 0).length / strategyTrades.length) * 100 : 0;
                       
                       return (
                         <div key={strategy} className="flex items-center justify-between p-3 border rounded-lg hover-scale transition-normal">
