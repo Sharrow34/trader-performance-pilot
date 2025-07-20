@@ -12,22 +12,24 @@ import { Trade } from './TradingJournal';
 interface AddTradeFormProps {
   onSubmit: (trade: Omit<Trade, 'id'>) => void;
   onCancel: () => void;
+  trade?: Trade;
+  isEditing?: boolean;
 }
 
-export const AddTradeForm: React.FC<AddTradeFormProps> = ({ onSubmit, onCancel }) => {
+export const AddTradeForm: React.FC<AddTradeFormProps> = ({ onSubmit, onCancel, trade, isEditing = false }) => {
   const [formData, setFormData] = useState({
-    symbol: '',
-    action: 'buy' as 'buy' | 'sell',
-    quantity: '',
-    entryPrice: '',
-    exitPrice: '',
-    entryDate: '',
-    exitDate: '',
-    status: 'open' as 'open' | 'closed',
-    strategy: '',
-    notes: '',
+    symbol: trade?.symbol || '',
+    action: trade?.action || 'buy' as 'buy' | 'sell',
+    quantity: trade?.quantity?.toString() || '',
+    entryPrice: trade?.entryPrice?.toString() || '',
+    exitPrice: trade?.exitPrice?.toString() || '',
+    entryDate: trade?.entryDate || '',
+    exitDate: trade?.exitDate || '',
+    status: trade?.status || 'open' as 'open' | 'closed',
+    strategy: trade?.strategy || '',
+    notes: trade?.notes || '',
   });
-  const [tags, setTags] = useState<string[]>([]);
+  const [tags, setTags] = useState<string[]>(trade?.tags || []);
   const [newTag, setNewTag] = useState('');
 
   const handleInputChange = (field: string, value: string) => {
@@ -79,7 +81,7 @@ export const AddTradeForm: React.FC<AddTradeFormProps> = ({ onSubmit, onCancel }
       <Card className="w-full max-w-2xl max-h-[90vh] overflow-y-auto animate-scale-in transition-normal hover-lift">
         <CardHeader>
           <div className="flex items-center justify-between">
-            <CardTitle>Add New Trade</CardTitle>
+            <CardTitle>{isEditing ? 'Edit Trade' : 'Add New Trade'}</CardTitle>
             <Button variant="ghost" size="sm" onClick={onCancel}>
               <X className="h-4 w-4" />
             </Button>
@@ -242,7 +244,7 @@ export const AddTradeForm: React.FC<AddTradeFormProps> = ({ onSubmit, onCancel }
 
             <div className="flex gap-3 pt-4">
               <Button type="submit" className="flex-1">
-                Add Trade
+                {isEditing ? 'Update Trade' : 'Add Trade'}
               </Button>
               <Button type="button" variant="outline" onClick={onCancel}>
                 Cancel

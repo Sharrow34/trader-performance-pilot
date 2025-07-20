@@ -5,14 +5,16 @@ import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
-import { Search, Filter, TrendingUp, TrendingDown } from 'lucide-react';
+import { Search, Filter, TrendingUp, TrendingDown, Edit, Trash2 } from 'lucide-react';
 import { Trade } from './TradingJournal';
 
 interface TradesListProps {
   trades: Trade[];
+  onEditTrade: (trade: Trade) => void;
+  onDeleteTrade: (tradeId: string) => void;
 }
 
-export const TradesList: React.FC<TradesListProps> = ({ trades }) => {
+export const TradesList: React.FC<TradesListProps> = ({ trades, onEditTrade, onDeleteTrade }) => {
   const [searchTerm, setSearchTerm] = useState('');
   const [statusFilter, setStatusFilter] = useState<string>('all');
   const [strategyFilter, setStrategyFilter] = useState<string>('all');
@@ -109,18 +111,19 @@ export const TradesList: React.FC<TradesListProps> = ({ trades }) => {
                 <TableHead>Status</TableHead>
                 <TableHead>Strategy</TableHead>
                 <TableHead>Tags</TableHead>
+                <TableHead>Actions</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
               {filteredTrades.length === 0 ? (
                 <TableRow>
-                  <TableCell colSpan={10} className="text-center py-8 text-muted-foreground">
+                  <TableCell colSpan={11} className="text-center py-8 text-muted-foreground">
                     No trades found matching your criteria
                   </TableCell>
                 </TableRow>
               ) : (
                 filteredTrades.map((trade) => (
-                  <TableRow key={trade.id} className="hover:bg-muted/50 transition-fast cursor-pointer">
+                  <TableRow key={trade.id} className="hover:bg-muted/50 transition-fast">
                     <TableCell className="font-medium">{trade.symbol}</TableCell>
                     <TableCell>
                       <Badge variant={trade.action === 'buy' ? 'default' : 'secondary'}>
@@ -165,6 +168,26 @@ export const TradesList: React.FC<TradesListProps> = ({ trades }) => {
                             {tag}
                           </Badge>
                         ))}
+                      </div>
+                    </TableCell>
+                    <TableCell>
+                      <div className="flex items-center gap-2">
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          onClick={() => onEditTrade(trade)}
+                          className="hover-scale transition-normal"
+                        >
+                          <Edit className="h-4 w-4" />
+                        </Button>
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          onClick={() => onDeleteTrade(trade.id)}
+                          className="hover-scale transition-normal text-destructive hover:text-destructive"
+                        >
+                          <Trash2 className="h-4 w-4" />
+                        </Button>
                       </div>
                     </TableCell>
                   </TableRow>

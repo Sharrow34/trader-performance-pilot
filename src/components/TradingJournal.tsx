@@ -3,7 +3,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Plus, TrendingUp, TrendingDown, Target, DollarSign } from 'lucide-react';
+import { Plus, TrendingUp, TrendingDown, Target, DollarSign, Download, Upload } from 'lucide-react';
 import { AddTradeForm } from './AddTradeForm';
 import { TradesList } from './TradesList';
 import { PerformanceChart } from './PerformanceChart';
@@ -72,6 +72,7 @@ const sampleTrades: Trade[] = [
 export const TradingJournal: React.FC = () => {
   const [trades, setTrades] = useState<Trade[]>(sampleTrades);
   const [showAddForm, setShowAddForm] = useState(false);
+  const [editingTrade, setEditingTrade] = useState<Trade | null>(null);
 
   const addTrade = (newTrade: Omit<Trade, 'id'>) => {
     const trade: Trade = {
@@ -80,6 +81,56 @@ export const TradingJournal: React.FC = () => {
     };
     setTrades([trade, ...trades]);
     setShowAddForm(false);
+  };
+
+  const updateTrade = (updatedTrade: Omit<Trade, 'id'>) => {
+    if (editingTrade) {
+      setTrades(trades.map(trade => 
+        trade.id === editingTrade.id 
+          ? { ...updatedTrade, id: editingTrade.id }
+          : trade
+      ));
+      setEditingTrade(null);
+    }
+  };
+
+  const deleteTrade = (tradeId: string) => {
+    setTrades(trades.filter(trade => trade.id !== tradeId));
+  };
+
+  const exportTrades = () => {
+    const dataStr = JSON.stringify(trades, null, 2);
+    const dataBlob = new Blob([dataStr], { type: 'application/json' });
+    const url = URL.createObjectURL(dataBlob);
+    const link = document.createElement('a');
+    link.href = url;
+    link.download = `trading-journal-${new Date().toISOString().split('T')[0]}.json`;
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    URL.revokeObjectURL(url);
+  };
+
+  const importTrades = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    if (file) {
+      const reader = new FileReader();
+      reader.onload = (e) => {
+        try {
+          const importedTrades = JSON.parse(e.target?.result as string);
+          if (Array.isArray(importedTrades)) {
+            setTrades(importedTrades);
+          } else {
+            alert('Invalid JSON format');
+          }
+        } catch (error) {
+          alert('Error reading file');
+        }
+      };
+      reader.readAsText(file);
+    }
+    // Reset input
+    event.target.value = '';
   };
 
   const closedTrades = trades.filter(trade => trade.status === 'closed');
@@ -99,10 +150,35 @@ export const TradingJournal: React.FC = () => {
             <h1 className="text-3xl font-bold text-foreground">Trading Journal</h1>
             <p className="text-muted-foreground">Track and analyze your trading performance</p>
           </div>
-          <Button onClick={() => setShowAddForm(true)} className="flex items-center gap-2 hover-lift transition-normal">
-            <Plus className="h-4 w-4" />
-            Add Trade
-          </Button>
+          <div className="flex items-center gap-2">
+            <input
+              type="file"
+              accept=".json"
+              onChange={importTrades}
+              className="hidden"
+              id="import-file"
+            />
+            <Button
+              variant="outline"
+              onClick={() => document.getElementById('import-file')?.click()}
+              className="flex items-center gap-2 hover-lift transition-normal"
+            >
+              <Upload className="h-4 w-4" />
+              Import
+            </Button>
+            <Button
+              variant="outline"
+              onClick={exportTrades}
+              className="flex items-center gap-2 hover-lift transition-normal"
+            >
+              <Download className="h-4 w-4" />
+              Export
+            </Button>
+            <Button onClick={() => setShowAddForm(true)} className="flex items-center gap-2 hover-lift transition-normal">
+              <Plus className="h-4 w-4" />
+              Add Trade
+            </Button>
+          </div>
         </div>
 
         {/* Performance Overview */}
@@ -176,7 +252,11 @@ export const TradingJournal: React.FC = () => {
           </TabsList>
 
           <TabsContent value="trades" className="space-y-4 animate-fade-in">
-            <TradesList trades={trades} />
+            <TradesList 
+              trades={trades} 
+              onEditTrade={setEditingTrade}
+              onDeleteTrade={deleteTrade}
+            />
           </TabsContent>
 
           <TabsContent value="analytics" className="space-y-4 animate-fade-in">
@@ -220,6 +300,16 @@ export const TradingJournal: React.FC = () => {
           <AddTradeForm 
             onSubmit={addTrade}
             onCancel={() => setShowAddForm(false)}
+          />
+        )}
+
+        {/* Edit Trade Modal */}
+        {editingTrade && (
+          <AddTradeForm 
+            trade={editingTrade}
+            onSubmit={updateTrade}
+            onCancel={() => setEditingTrade(null)}
+            isEditing
           />
         )}
       </div>
